@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>后台推送界面</title>
+</head>
+<body>
+<div>
+    <input type="text" name="content" placeholder="请输入需要推送的信息">
+    <button id="push_button">推送</button>
+</div>
+</body>
+<script>
+
+    window.onload = function () {
+        var socket = new WebSocket('ws://119.29.37.33:9502');  //监听端口
+        var push_button = document.getElementById("push_button");
+        var push_content = document.getElementsByName("content");
+
+        push_button.onclick = function () {
+            socket.send(push_content['0'].value);
+        }
+        socket.onmessage = function (event) {  // **接收到服务器数据**触发
+            // alert('Received data: ' + event.data);   //这里应该返回发送成功的额标识
+            
+        };
+        socket.onopen = function () {  //监听是否连接服务器成功触发
+            console.log('Connected!');
+            // socket.send(push_content['0'].value);    //重要!!客户端返回服务器
+        };
+
+        socket.onclose = function () {  //与服务器连接断开触发
+            console.log('Lost connection!');
+        };
+        socket.onerror = function () { //与服务器连接出现错误触发
+            console.log('Error!');
+        };
+    };
+</script>
+</html>

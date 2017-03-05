@@ -1,0 +1,60 @@
+
+	/* css 重置 */
+	body, p, input, h1, h2, h3, h4, h5, h6, ul, li, dl, dt, dd, form { margin: 0; padding: 0; list-style: none; vertical-align: middle; font-weight:normal; }
+	img { border:0; margin: 0; padding: 0;   }
+	body { color: #000; -webkit-user-select: none; -webkit-text-size-adjust: none; font:normal 16px/200% "微软雅黑", helvetica, arial; text-align:left;   }
+	header, section, footer { display: block; margin: 0; padding: 0 }
+	a{text-decoration:none;color:#000;}
+	
+
+	html,body{ height:80%; width:100%;   }
+	body{ background:#f4f4f4;  }
+	/* 头部 */
+	header{  background:#F5AB38;padding:5px;   color:#fff;  text-shadow:1px 1px 0 #965e18; }
+	header .logo{ font-size:14px}
+	header .logo a{ color:#fff;  }
+	nav{ color:#cb524b; font-size:0}
+	nav a{ display:inline-block; width:25%; text-align:center; color:#fff; font-size:14px; vertical-align:top; }
+
+
+	/* 尾部 */
+	footer{ text-align:center; padding:10px 0; line-height:30px; font-size:14px; }
+
+	/* 内容 */
+	#content{ position:relative;   }
+	#log{ height:40px; width:98%; margin:0 auto;  font-size:12px;  background:#fff; border:1px solid #ddd; display:block; margin-top:10px;  }
+	#touchArea{ margin:10px; border:1px solid #ccc; height:200px;   background:#fff; font-size:12px; line-height:18px;   }
+	#point{ width:30px; height:30px; overflow:hidden; background:#f00; position:absolute; left:50%; margin-left:-15px; top:240px;
+		-webkit-border-radius:30px; -moz-border-radius:30px; border-radius:30px;
+	}
+
+	#canvas{ background:#fff; }
+
+	#panel{ position:absolute; width:40px; left:3px; top:3px; background:#eee; cursor:pointer; }
+	#pen li{ width:34px; height:34px; margin:2px; border:1px solid #fff; background:#fff;   }
+	#pen li span{ display:block; -webkit-border-radius:10px; -moz-border-radius:10px; border-radius:10px; line-height:99px; overflow:hidden; background:#000;  }
+	#pen .pen1 span{ width:1px; height:1px; margin:16px;  }
+	#pen .pen2 span{ width:5px; height:5px; margin:14px;   }
+	#pen .pen3 span{ width:10px; height:10px; margin:12px;  }
+	#pen li.cur{ border-color:#f00;  }
+	#reset{ width:35px; height:35px; line-height:35px; color:#fff; font-size:12px; text-align:center;  margin:2px; background:#666; overflow:hidden;    }
+
+	#color{  }
+	#color dt{ width:35px; height:35px; line-height:35px; color:#fff; font-size:12px; text-align:center; margin:2px; background:#000;   }
+	#color dd{ display:none;  position:absolute; width:183px; height:200px; left:40px; top:0; background:#eee;  overflow:hidden;   }
+	#color dd li{ width:30px; height:30px; float:left; line-height:100px; overflow:hidden; margin:3px;     }
+</style><style type="text/css" adt="123"></style><style id="style-1-cropbar-clipper">/* Copyright 2014 Evernote Corporation. All rights reserved. */
+.en-markup-crop-options {
+    top: 18px !important;
+    left: 50% !important;
+    margin-left: -100px !important;
+    width: 200px !important;
+    border: 2px rgba(255,255,255,.38) solid !important;
+    border-radius: 4px !important;
+}
+
+.en-markup-crop-options div div:first-of-type {
+    margin-left: 0px !important;
+}
+
+object,embed{                -webkit-animation-duration:.001s;-webkit-animation-name:playerInserted;                -ms-animation-duration:.001s;-ms-animation-name:playerInserted;                -o-animation-duration:.001s;-o-animation-name:playerInserted;                animation-duration:.001s;animation-name:playerInserted;}                @-webkit-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}                @-ms-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}                @-o-keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}                @keyframes playerInserted{from{opacity:0.99;}to{opacity:1;}}
