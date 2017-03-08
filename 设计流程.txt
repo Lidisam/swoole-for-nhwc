@@ -13,3 +13,8 @@
 问题：一刷新$this->redis->get("fd")的信息就被清空了
 
 待重写问题：清屏虽然可用，但是采用了其他重新覆盖上去
+
+
+数据来源：
+成语来源(40个):https://zhidao.baidu.com/question/430076247.html
+其他：http://www.chinadmd.com/file/uouirvowre6x3sczir6w6toe_1.html

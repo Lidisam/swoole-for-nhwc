@@ -34,9 +34,9 @@ class WebSocket
 
         /*********启动服务**********/
         $this->server = $server = new swoole_websocket_server('0.0.0.0', $this->port);
-        $this->server->set([
-            'daemonize' => true, //是否作为守护进程
-        ]);
+//        $this->server->set([
+//            'daemonize' => true, //是否作为守护进程
+//        ]);
         $this->server->on('open', [$this, 'open']);
         $this->server->on('message', [$this, 'message']);
         $this->server->on('close', [$this, 'close']);
@@ -78,22 +78,36 @@ class WebSocket
         if ($val['status'] == '3') {
             $msgs = $this->getSign($val, $frame->fd);  //信号信息写入内存
             $frame->data = $msgs;
+            /**该用户个人状态信息广播**/
+            $name = explode("#", $val['username']);
+            $str = json_decode($this->redis->get("fd"), true);
+            $counter = 0;
+            foreach ($str as $key => $value) {
+                if ($str[$frame->fd]['roomnum'] == $value['roomnum']) {
+                    $counter++;
+                }
+            }
+            $server->push($frame->fd, '{"status":"6","username":"' . $name['0'] . '","counter":"' . $counter . '"}');
         }
         /**信号广播**/
         $str = json_decode($this->redis->get("fd"), true);
+        print_r($str);
         //获取当前房间号所有用户信息
         foreach ($str as $key => $value) {
             if ($str[$frame->fd]['roomnum'] != $value['roomnum']) {
-                unset($str[$frame->fd]);   //删除非本房间号的信息
+                unset($str[$key]);   //删除非本房间号的信息
             }
         }
+        print_r($str);
         $str['status'] = "5";  //当前房间所有用户信息
         foreach ($str as $key => $value) {
-            //房间号相同且不为当前用户
-            if ($frame->fd != $key && $str[$frame->fd]['roomnum'] == $value['roomnum']) {
-                $server->push($key, $frame->data);
+            if ($key != 'status') {
+                //房间号相同且不为当前用户
+                if ($frame->fd != $key) {
+                    $server->push((int)$key, $frame->data);
+                }
+                $server->push((int)$key, json_encode($str));   //广播当前用户房间信息
             }
-            $server->push($key, json_encode($str));   //广播当前用户房间信息
         }
     }
 
@@ -140,9 +154,10 @@ class WebSocket
             case '3':
                 $val = explode("#", $signMsgs['username']);
                 $str = json_decode($this->redis->get("fd"), true);
+                $counter = count($str);
                 $str[$fd] = ['username' => $val['0'], 'roomnum' => $val['1']];
                 $this->redis->set("fd", json_encode($str));
-                return '{"status":"4", "username": "' . $val['0'] . '"}';   //上线信号
+                return '{"status":"4", "username": "' . $val['0'] . '","counter":"' . $counter . '"}';   //上线信号
                 break;
         }
     }

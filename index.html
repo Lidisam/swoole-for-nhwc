@@ -109,6 +109,17 @@
             var str = JSON.parse(event.data);
             //TODO:在这里设置一个标识flag判断当前是否第一次登陆
 
+            /**当前用户登录后等到的个人信息反馈**/
+            if (str.status == "6") {
+                //如果用户为零，代表你是最早来的用户
+                if (str.counter == 1) {
+                    alert('你是房主');
+                    console.log(str);
+                } else {
+                    alert('你不是房主');
+                    console.log(str);
+                }
+            }
             //当前房间所有用户信息
             if (str.status == "5") {
                 console.log(JSON.parse(event.data));
