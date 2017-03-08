@@ -59,7 +59,7 @@
         </dl>
         <div id="reset" title="清除画板">R</div>
     </div>
-    <canvas id="canvas" width="1366" height="557"></canvas>
+    <canvas id="canvas" width="1366" height="557" style="display: none"></canvas>
     <div>
         <div style="background-color: #f5ab50">
             <!--//这里是消息通知栏-->
@@ -69,7 +69,11 @@
         <div class="col-md-12" id="currentUser">
 
         </div>
-        <div class="col-md-12" style="margin-top: 5px">
+        <!--用户第一次登陆的状态-->
+        <div class="col-md-12" id="firstStatus">
+
+        </div>
+        <div class="col-md-12" style="margin-top: 5px;display: none" id="submitQuestion">
             <input type="search" class="form-control" width="100%">
             <button type="button" class="btn btn-primary form-control" style="margin-top: 10px">提交</button>
         </div>
@@ -89,6 +93,7 @@
     //默认prompt
     var socket;
     var context = canvas.getContext("2d");
+    var username;
 
     var res = layer.prompt({
         formType: 0,
@@ -98,6 +103,8 @@
         socket = new WebSocket('ws://119.29.37.33:9502/');  //监听端口
         socket.onopen = function () {  //监听是否连接服务器成功触发
             console.log('websocket连接成功!');
+            username = value.split("#");
+            username = username['0'];
             //发送游戏名到服务器
             socket.send('{"status":"3","username": "' + value + '"}');
         };
@@ -107,33 +114,35 @@
         socket.onmessage = function (event) {  // **接收到服务器数据**触发
 //            console.log(event);
             var str = JSON.parse(event.data);
-            //TODO:在这里设置一个标识flag判断当前是否第一次登陆
-
             /**当前用户登录后等到的个人信息反馈**/
             if (str.status == "6") {
                 //如果用户为零，代表你是最早来的用户
                 if (str.counter == 1) {
-                    alert('你是房主');
-                    console.log(str);
+                    $("#firstStatus").html('<hr/><button type="button" class="btn btn-primary form-control" style="margin-top: 10px">点击开始</button>');
                 } else {
-                    alert('你不是房主');
-                    console.log(str);
+                    $("#firstStatus").html('<hr/><div class="col-md-12 text-center" style="color: #ccc">等待房主开始~~</div>');
                 }
             }
-            //当前房间所有用户信息
+            /**显示当前房间所有用户信息**/
             if (str.status == "5") {
                 console.log(JSON.parse(event.data));
                 /**载入当前房间所有用户信息**/
                 var html = '';
                 $.each(str, function (n, val) {
                     if (n != 'status')
-                        html += '<div class="col-xs-3" id="user_' + n + '" style="margin: 0 0 0 0;padding: 0 0 0 0;">'
-                            + val['username'] +
-                            '#<span id="user_mark_' + n + '">0</span></div>';
+                        if (username == val['username']) {
+                            html += '<div class="col-xs-3" id="user_' + n + '" style="margin: 0 0 0 0;padding: 0 0 0 0;color: red">'
+                                + val['username'] +
+                                '#<span id="user_mark_' + n + '">0</span></div>';
+                        } else {
+                            html += '<div class="col-xs-3" id="user_' + n + '" style="margin: 0 0 0 0;padding: 0 0 0 0;">'
+                                + val['username'] +
+                                '#<span id="user_mark_' + n + '">0</span></div>';
+                        }
                 });
                 $("#currentUser").html(html);
             }
-            //其他用户登录广播
+            /**其他用户登录广播**/
             if (str.status == "4") {
                 layer.msg(str.username + '上线了');
             }
