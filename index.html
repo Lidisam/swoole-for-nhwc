@@ -10,6 +10,8 @@
     <title>ds</title>
     <link rel="stylesheet" type="text/css" href="assets/css/index.css">
     <link href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <!--弹幕聊天信息css-->
+    <link rel="stylesheet" type="text/css" href="assets/css/bullet-screen.css">
     <style type="text/css"></style>
     <script src="../../大三第二学期/002-杂记.js"></script>
 </head>
@@ -59,11 +61,12 @@
         </dl>
         <div id="reset" title="清除画板">R</div>
     </div>
-    <canvas id="canvas" width="1366" height="557" style="display: none"></canvas>
+    <canvas id="canvas" width="1366" height="557"
+            style="display: none;background-color:#000;opacity:0.01;text-align:center"></canvas>
     <div>
         <div style="background-color: #f5ab50">
             <!--//这里是消息通知栏-->
-            <marquee direction="left" loop="1">lisam：苹果</marquee>
+            <section class="main" id="returnQuestion" style="height: 20px"></section>
         </div>
         <!--当前用户显示-->
         <div class="col-md-12" id="currentUser">
@@ -74,16 +77,20 @@
 
         </div>
         <div class="col-md-12" style="margin-top: 5px;display: none" id="submitQuestion">
-            <input type="search" class="form-control" width="100%">
-            <button type="button" class="btn btn-primary form-control" style="margin-top: 10px">提交</button>
+            <input type="search" id="input" class="form-control" width="100%" placeholder="请输入你的答案">
+            <button type="button" id="sendQuestion" class="btn btn-primary form-control"
+                    style="margin-top: 10px">提交
+            </button>
         </div>
+
     </div>
 </div>
 
 
 <script src="./assets/js/jquery.js"></script>
-<!--layer弹出层-->
+<!--layer弹出层插件-->
 <script src="./assets/layer/layer.js"></script>
+
 <!--helper函数-->
 <!--<script src="./assets/js/helper.js"></script>-->
 
@@ -130,11 +137,15 @@
                 $('#panel').show();
                 $('#firstStatus').hide();
                 $('#submitQuestion').show();
-                layer.msg('房主' + str.username + ':游戏开始提示,测试阶段，功能未完成');
+                layer.msg('房主' + str.username + ':游戏开始提示,测试阶段，功能未完成，画板上暂时加了一层遮盖层，无法点击');
             }
             /**进入游戏后的定时器计算**/
             if (str.status == "8") {
                 layer.msg('当前时间已过：' + str.time);
+            }
+            /**答案文字信息结果接收**/
+            if (str.status == "9") {
+                randomText(str.username + "：" + str.answer);
             }
             /**显示当前房间所有用户信息**/
             if (str.status == "5") {
@@ -184,7 +195,6 @@
                     e.preventDefault();
                     context.lineTo(1, 1);
                     context.stroke();
-
                 }
             }
         };
@@ -206,6 +216,8 @@
 
 <!--画布主函数-->
 <script src="./assets/js/index.js"></script>
+<!--弹幕聊天信息处理-->
+<script src="./assets/layer/bullet-screen.js"></script>
 
 
 </body>

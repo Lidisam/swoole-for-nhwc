@@ -112,6 +112,10 @@ class WebSocket
             });
             $server->push($frame->fd, $frame->data);
         }
+        /**游戏返回答案处理**/
+        if ($val['status'] == '9') {
+            $server->push($frame->fd, $frame->data);  //先给自己发一份
+        }
 
         /**信号广播**/
         $str = json_decode($this->redis->get("fd"), true);
