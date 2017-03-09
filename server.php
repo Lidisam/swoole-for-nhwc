@@ -34,9 +34,10 @@ class WebSocket
 
         /*********启动服务**********/
         $this->server = $server = new swoole_websocket_server('0.0.0.0', $this->port);
-//        $this->server->set([
-//            'daemonize' => true, //是否作为守护进程
-//        ]);
+        $this->server->set([
+            'worker_num' => 2,
+            'daemonize' => true, //是否作为守护进程
+        ]);
         $this->server->on('open', [$this, 'open']);
         $this->server->on('message', [$this, 'message']);
         $this->server->on('close', [$this, 'close']);
@@ -89,6 +90,29 @@ class WebSocket
             }
             $server->push($frame->fd, '{"status":"6","username":"' . $name['0'] . '","counter":"' . $counter . '"}');
         }
+        /**游戏开始信号**/
+        if ($val['status'] == '7') {
+            $str = json_decode($this->redis->get("fd"), true);
+            //TODO:???定时器如何销毁好了?????
+            //TODO:销毁方法：https://wiki.swoole.com/wiki/page/415.html
+            $server->tick(1000, function () use ($server, $str, $frame) {
+                //TODO:这是重复部分，应合并~~~~~~~~~~~~~~~~~~~~~~~~~~
+                if (!$this->redis->EXISTS("time_" . $frame->fd . "")) $this->redis->set("time_" . $frame->fd . "", (int)0);
+                foreach ($str as $key => $value) {
+                    if ($str[$frame->fd]['roomnum'] != $value['roomnum']) {
+                        unset($str[$key]);   //删除非本房间号的信息
+                    }
+                }
+                foreach ($str as $key => $value) {
+                    if ($key != 'status') {
+                        $server->push((int)$key, '{"status":"8","time":"' . $this->redis->get("time_" . $frame->fd . "") . '"}');
+                    }
+                }
+                $this->redis->INCRBY("time_" . $frame->fd . "", 1);
+            });
+            $server->push($frame->fd, $frame->data);
+        }
+
         /**信号广播**/
         $str = json_decode($this->redis->get("fd"), true);
         print_r($str);

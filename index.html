@@ -18,11 +18,11 @@
 <body>
 <!-- 头部 -->
 <header>
-    <h1 class="logo"><a target="_blank" href="#">ds</a></h1>
+    <h1 class="logo"><a target="_blank" href="#" id="roomnum">ds</a></h1>
 </header>
 
 <div id="content">
-    <div id="panel">
+    <div id="panel" style="display: none">
         <ul id="pen" title="画笔大小">
             <li class="pen1 cur"><span>1</span></li>
             <li class="pen2"><span>5</span></li>
@@ -104,6 +104,7 @@
         socket.onopen = function () {  //监听是否连接服务器成功触发
             console.log('websocket连接成功!');
             username = value.split("#");
+            $("#roomnum").html('房号：' + username['1']);
             username = username['0'];
             //发送游戏名到服务器
             socket.send('{"status":"3","username": "' + value + '"}');
@@ -118,10 +119,22 @@
             if (str.status == "6") {
                 //如果用户为零，代表你是最早来的用户
                 if (str.counter == 1) {
-                    $("#firstStatus").html('<hr/><button type="button" class="btn btn-primary form-control" style="margin-top: 10px">点击开始</button>');
+                    $("#firstStatus").html('<hr/><button type="button" onclick="startGame()" id="startGame" class="btn btn-primary form-control" style="margin-top: 10px">点击开始</button>');
                 } else {
                     $("#firstStatus").html('<hr/><div class="col-md-12 text-center" style="color: #ccc">等待房主开始~~</div>');
                 }
+            }
+            /**游戏开始广播**/
+            if (str.status == "7") {
+                $('#canvas').show();
+                $('#panel').show();
+                $('#firstStatus').hide();
+                $('#submitQuestion').show();
+                layer.msg('房主' + str.username + ':游戏开始提示,测试阶段，功能未完成');
+            }
+            /**进入游戏后的定时器计算**/
+            if (str.status == "8") {
+                layer.msg('当前时间已过：' + str.time);
             }
             /**显示当前房间所有用户信息**/
             if (str.status == "5") {
@@ -183,6 +196,12 @@
         };
         layer.close(index);
     });
+
+    /**游戏开始部分处理**/
+    function startGame() {
+        //游戏开始信号
+        socket.send('{"status":"7","username":"' + username + '"}');
+    }
 </script>
 
 <!--画布主函数-->
