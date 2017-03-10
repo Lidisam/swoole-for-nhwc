@@ -62,7 +62,8 @@
         <div id="reset" title="清除画板">R</div>
     </div>
     <canvas id="canvas" width="1366" height="557"
-            style="display: none;background-color:#000;opacity:0.01;text-align:center"></canvas>
+            style="display: none;"></canvas>
+    <!--background-color:#000;opacity:0.01;text-align:center-->
     <div>
         <div style="background-color: #f5ab50">
             <!--//这里是消息通知栏-->
@@ -137,11 +138,15 @@
                 $('#panel').show();
                 $('#firstStatus').hide();
                 $('#submitQuestion').show();
-                layer.msg('房主' + str.username + ':游戏开始提示,测试阶段，功能未完成，画板上暂时加了一层遮盖层，无法点击');
+                layer.msg('房主' + str.username + ':游戏开始提示,测试阶段，功能未完成，仅能相互聊天画画(以去除：画板上暂时加了一层遮盖层，无法点击)');
             }
             /**进入游戏后的定时器计算**/
             if (str.status == "8") {
-                layer.msg('当前时间已过：' + str.time);
+                if (str.time) {
+                    layer.msg('当前时间已过：' + str.time + ',当前画家是：' + str.username);
+                } else {
+                    layer.msg('游戏结束');
+                }
             }
             /**答案文字信息结果接收**/
             if (str.status == "9") {

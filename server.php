@@ -35,7 +35,7 @@ class WebSocket
         /*********启动服务**********/
         $this->server = $server = new swoole_websocket_server('0.0.0.0', $this->port);
         $this->server->set([
-            'worker_num' => 2,
+//            'worker_num' => 2,
             'daemonize' => true, //是否作为守护进程
         ]);
         $this->server->on('open', [$this, 'open']);
@@ -93,23 +93,46 @@ class WebSocket
         /**游戏开始信号**/
         if ($val['status'] == '7') {
             $str = json_decode($this->redis->get("fd"), true);
-            //TODO:???定时器如何销毁好了?????
+
             //TODO:销毁方法：https://wiki.swoole.com/wiki/page/415.html
-            $server->tick(1000, function () use ($server, $str, $frame) {
+            $server->tick(1000, function ($id) use ($server, $str, $frame) {
                 //TODO:这是重复部分，应合并~~~~~~~~~~~~~~~~~~~~~~~~~~
                 if (!$this->redis->EXISTS("time_" . $frame->fd . "")) $this->redis->set("time_" . $frame->fd . "", (int)0);
+                /**清除该定时器以及对应的计数器**/
+                if ((int)$this->redis->get("time_" . $frame->fd . "") > 50) {
+                    $server->clearTimer($id);
+                    $this->redis->del("time_" . $frame->fd . "");
+                }
+                /**轮到谁玩广播，假设每人60秒-5秒休息时间**/
                 foreach ($str as $key => $value) {
                     if ($str[$frame->fd]['roomnum'] != $value['roomnum']) {
                         unset($str[$key]);   //删除非本房间号的信息
                     }
                 }
+                /**确定当前画的玩家**/
+                $counter = 1;   //用于确定当前是哪个在画
+                $currentCounter = ceil($this->redis->get("time_" . $frame->fd . "") / 65);  //进一取整
+                $curUser = null;  //用于存储当前正在画的玩家信息
                 foreach ($str as $key => $value) {
                     if ($key != 'status') {
-                        $server->push((int)$key, '{"status":"8","time":"' . $this->redis->get("time_" . $frame->fd . "") . '"}');
+                        if ($counter == $currentCounter) {  //当前的画的玩家
+                            $curUser = $value;
+                            break;
+                        }
+                        $counter++;
+                    }
+                }
+                foreach ($str as $key => $value) {
+                    if ($key != 'status') {
+                        $server->push((int)$key, '{"status":"8","time":"' . $this->redis->get("time_" . $frame->fd . "")
+                            . '","username":"' . $curUser['username'] . '"}');
+                        $counter++;
                     }
                 }
                 $this->redis->INCRBY("time_" . $frame->fd . "", 1);
             });
+
+
             $server->push($frame->fd, $frame->data);
         }
         /**游戏返回答案处理**/
@@ -119,14 +142,14 @@ class WebSocket
 
         /**信号广播**/
         $str = json_decode($this->redis->get("fd"), true);
-        print_r($str);
+//        print_r($str);
         //获取当前房间号所有用户信息
         foreach ($str as $key => $value) {
             if ($str[$frame->fd]['roomnum'] != $value['roomnum']) {
                 unset($str[$key]);   //删除非本房间号的信息
             }
         }
-        print_r($str);
+//        print_r($str);
         $str['status'] = "5";  //当前房间所有用户信息
         foreach ($str as $key => $value) {
             if ($key != 'status') {

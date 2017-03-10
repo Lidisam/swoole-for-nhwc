@@ -18,9 +18,9 @@
 
 
 问题：一刷新$this->redis->get("fd")的信息就被清空了
-
 待重写问题：清屏虽然可用，但是采用了其他重新覆盖上去
-
+问题：一个肯爹的问题。由于之前tick线程没清除导致，线程多的混乱以及redis缓存数据混乱，
+于是  ---> 重启->重启后service iptables stop 
 
 数据来源：
 成语来源(40个):https://zhidao.baidu.com/question/430076247.html
