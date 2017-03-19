@@ -121,7 +121,7 @@
     var move = function (e) {
         var point = hasTouch ? e.touches[0] : e;
         e.preventDefault();
-        socket.send('{"status":"-1",:"first":' + point.pageX + ',"second":' + point.pageY + ',' +
+        socket.send('{"status":"-1","first":' + point.pageX + ',"second":' + point.pageY + ',' +
             '"penWidth":' + penWidth + ',"penColor":"' + penColor + '"}');
         draw(point.pageX, point.pageY);
 

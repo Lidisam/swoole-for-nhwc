@@ -16,7 +16,7 @@
     <script src="../../大三第二学期/002-杂记.js"></script>
     <style>
         .disabled {
-            background-color:#000;opacity:0.01;text-align:center
+            /*background-color:#000;opacity:0.01;text-align:center*/
         }
     </style>
 </head>
@@ -120,7 +120,7 @@
         //输入游戏名后连接游戏
         socket = new WebSocket('ws://119.29.37.33:9502/');  //监听端口
         socket.onopen = function () {  //监听是否连接服务器成功触发
-            console.log('websocket连接成功!');
+//            console.log('websocket连接成功!');
             username = value.split("#");
             $("#roomnum").html('房号：' + username['1']);
             username = username['0'];
@@ -132,6 +132,7 @@
          * */
         socket.onmessage = function (event) {  // **接收到服务器数据**触发
 //            console.log(event);
+            console.log(event.data);
             var str = JSON.parse(event.data);
             /**当前用户登录后等到的个人信息反馈**/
             if (str.status == "6") {
@@ -156,7 +157,7 @@
 //                    layer.msg('当前时间已过：' + str.time + ',当前画家是：' + str.username + ',当前试题：'+str.name+',当前提示：'+str.tips);
                     if (str.username == username) {
                         $("#canvas").removeClass("disabled");
-                        layer.msg('当前谜题：'+str.name);
+//                        layer.msg('当前谜题：'+str.name);
                     }else{
                         $("#canvas").addClass("disabled");
                     }
@@ -173,7 +174,7 @@
             }
             /**显示当前房间所有用户信息**/
             if (str.status == "5") {
-                console.log(JSON.parse(event.data));
+//                console.log(JSON.parse(event.data));
                 /**载入当前房间所有用户信息**/
                 var html = '';
                 $.each(str, function (n, val) {
@@ -198,7 +199,7 @@
             if (str.status == "2") {
                 context.clearRect(0, 0, document.body.clientWidth, canvas.height);
                 context.beginPath();
-                e.preventDefault();
+//                e.preventDefault();
                 context.lineTo(1, 1);
                 context.stroke();
             } else {
@@ -216,7 +217,7 @@
                 if (str.status == "0") {
                     context.stroke();
                     context.beginPath();
-                    e.preventDefault();
+//                    e.preventDefault();
                     context.lineTo(1, 1);
                     context.stroke();
                 }
