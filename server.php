@@ -141,12 +141,20 @@ class WebSocket extends BaseController
     {
         $str = json_decode($this->redis->get("fd"), true);
         //TODO:销毁方法：https://wiki.swoole.com/wiki/page/415.html
-        $server->tick(1000, function ($id) use ($server, $str, $frame) {
+        /**获取当前游戏总时间**/
+        $counter = 0;
+        foreach ($str as $key => $value) {
+            if ($str[$frame->fd]['roomnum'] == $value['roomnum']) {
+                $counter++;
+            }
+        }
+        $total = (int)($this->singleTime) * $counter;
+        $server->tick(1000, function ($id) use ($server, $str, $frame, $total) {
             if (!$this->redis->EXISTS("time_" . $frame->fd . "")) {
                 $this->redis->set("time_" . $frame->fd . "", (int)0);
             }
             /**清除该定时器以及对应的计数器**/
-            if ((int)$this->redis->get("time_" . $frame->fd . "") > 50) {
+            if ((int)$this->redis->get("time_" . $frame->fd . "") > $total) {
                 $server->clearTimer($id);
                 $this->redis->del("time_" . $frame->fd . "");
                 $this->redis->del("tips_" . $frame->fd . "");
@@ -159,9 +167,7 @@ class WebSocket extends BaseController
             }
             /**确定当前画的玩家**/
             $counter = 1;   //用于确定当前是哪个在画
-            $currentCounter = ceil($this->redis->get("time_" . $frame->fd . "") / 20);  //进一取整
-            echo "\n 当前计数：{$counter}、{$this->redis->get("time_" . $frame->fd . "")} \n";
-            echo "\n 当前取整：" . ceil($this->redis->get("time_" . $frame->fd . "") / 20) . " \n";
+            $currentCounter = ceil($this->redis->get("time_" . $frame->fd . "") / $this->singleTime);  //进一取整
             $curUser = null;  //用于存储当前正在画的玩家信息
             $flag = 0;   //用于标识是否取出新的数据
             foreach ($str as $key => $value) {
@@ -169,7 +175,7 @@ class WebSocket extends BaseController
                     if ($counter == $currentCounter) {  //当前的画的玩家
                         $curUser = $value;
                         //如果是整数则取出一个数据
-                        if (is_int($this->redis->get("time_" . $frame->fd . "") / 20)) {
+                        if (is_int($this->redis->get("time_" . $frame->fd . "") / $this->singleTime)) {
                             $flag = 1;
                         } else if ($this->redis->get("time_" . $frame->fd . "") == 1) {
                             $result = mysqli_query($this->mysql, "SELECT * FROM yhwc ORDER BY rand() limit 1");
