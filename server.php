@@ -39,7 +39,7 @@ class WebSocket extends BaseController
         $this->server = $server = new swoole_websocket_server('0.0.0.0', $this->port);
         $this->server->set([
             'worker_num' => 2,
-//            'daemonize' => true, //是否作为守护进程
+            'daemonize' => true, //是否作为守护进程
         ]);
         $this->server->on('open', [$this, 'open']);
         $this->server->on('message', [$this, 'message']);
@@ -95,6 +95,8 @@ class WebSocket extends BaseController
         }
         /**游戏返回答案处理**/
         if ($val['status'] == '9') {
+//            $row = json_decode($this->redis->get("tips_" . $frame->fd . ""), true);  //题目
+//            if($val['answer'] == $row['1']) echo "66666666666666";
             $server->push($frame->fd, $frame->data);  //先给自己发一份
         }
         /**信号广播**/
@@ -180,7 +182,7 @@ class WebSocket extends BaseController
                         } else if ($this->redis->get("time_" . $frame->fd . "") == 1) {
                             $result = mysqli_query($this->mysql, "SELECT * FROM yhwc ORDER BY rand() limit 1");
                             $row = mysqli_fetch_row($result);
-                            print_r(json_encode($row));
+//                            print_r(json_encode($row));
                             $this->redis->set("tips_" . $frame->fd . "", json_encode($row));  //题目
                         }
                         break;
@@ -200,7 +202,7 @@ class WebSocket extends BaseController
             if ($flag == 1) {
                 $result = mysqli_query($this->mysql, "SELECT * FROM yhwc ORDER BY rand() limit 1");
                 $row = mysqli_fetch_row($result);
-                print_r(($row));
+//                print_r(($row));
                 $this->redis->set("tips_" . $frame->fd . "", json_encode($row));  //题目
             }
             $this->redis->INCRBY("time_" . $frame->fd . "", 1);

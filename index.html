@@ -14,11 +14,6 @@
     <link rel="stylesheet" type="text/css" href="assets/css/bullet-screen.css">
     <style type="text/css"></style>
     <script src="../../大三第二学期/002-杂记.js"></script>
-    <style>
-        .disabled {
-            /*background-color:#000;opacity:0.01;text-align:center*/
-        }
-    </style>
 </head>
 
 
@@ -27,9 +22,10 @@
 <header>
     <h1 class="logo">
         <a target="_blank" href="#" id="roomnum">ds</a>
-        <a href="">当前：<span id="player"></span></a>
-        <a href="">提示：<span id="tips"></span></a>
-        <a href="">剩余时间：<span id="leaveTime"></span></a>
+        <a href="" id="player"></a>
+        <a href="" id="tips"></a>
+        <a href="" id="leaveTime"></a>
+        <a href="" id="answer"></a>
     </h1>
 </header>
 
@@ -71,9 +67,8 @@
         </dl>
         <div id="reset" title="清除画板">R</div>
     </div>
-    <canvas class="disabled" id="canvas" width="1366" height="557"
+    <canvas id="canvas" width="1366" height="557"
             style="display: none;"></canvas>
-    <!--background-color:#000;opacity:0.01;text-align:center-->
     <div>
         <div style="background-color: #f5ab50">
             <!--//这里是消息通知栏-->
@@ -112,6 +107,7 @@
     var socket;
     var context = canvas.getContext("2d");
     var username;
+    var singleTime = 60;  //每轮单回合游戏时间
 
     var res = layer.prompt({
         formType: 0,
@@ -120,7 +116,6 @@
         //输入游戏名后连接游戏
         socket = new WebSocket('ws://119.29.37.33:9502/');  //监听端口
         socket.onopen = function () {  //监听是否连接服务器成功触发
-//            console.log('websocket连接成功!');
             username = value.split("#");
             $("#roomnum").html('房号：' + username['1']);
             username = username['0'];
@@ -149,21 +144,22 @@
                 $('#panel').show();
                 $('#firstStatus').hide();
                 $('#submitQuestion').show();
-                layer.msg('房主' + str.username + ':游戏开始提示,测试阶段，功能未完成，仅能相互聊天画画(以去除：画板上暂时加了一层遮盖层，无法点击)');
+                layer.msg('房主' + str.username + ':游戏开始提示,测试阶段');
             }
             /**进入游戏后的定时器计算**/
             if (str.status == "8") {
                 if (str.time) {
-//                    layer.msg('当前时间已过：' + str.time + ',当前画家是：' + str.username + ',当前试题：'+str.name+',当前提示：'+str.tips);
                     if (str.username == username) {
-                        $("#canvas").removeClass("disabled");
-//                        layer.msg('当前谜题：'+str.name);
-                    }else{
-                        $("#canvas").addClass("disabled");
+                        flag = 1;   //允许当前玩家用画笔
+                        $("#answer").html('|answer：' + str.name);  //给当前玩家显示答案
+                    } else {
+                        flag = 0;
+                        $("#answer").html("");  //给当前玩家显示答案
                     }
-                    $("#leaveTime").html(20 - parseInt(str.time));
-                    $("#player").html(str.username);
-                    $("#tips").html(str.tips);
+                    var time = singleTime - parseInt(str.time)%singleTime;
+                    $("#leaveTime").html('|time：' + time);
+                    $("#player").html('|player：' + str.username);
+                    $("#tips").html('|tip：' + str.tips);
                 } else {
                     layer.msg('游戏结束');
                 }
@@ -174,7 +170,6 @@
             }
             /**显示当前房间所有用户信息**/
             if (str.status == "5") {
-//                console.log(JSON.parse(event.data));
                 /**载入当前房间所有用户信息**/
                 var html = '';
                 $.each(str, function (n, val) {
@@ -199,7 +194,6 @@
             if (str.status == "2") {
                 context.clearRect(0, 0, document.body.clientWidth, canvas.height);
                 context.beginPath();
-//                e.preventDefault();
                 context.lineTo(1, 1);
                 context.stroke();
             } else {
@@ -207,7 +201,6 @@
                 if (str.status == "1") {
                     context.moveTo(parseInt(str.first) - canvT, parseInt(str.second) - canvL);
                 }
-//                console.log(str);
                 //触碰拖拉事件
                 context.lineTo(parseInt(str.first) - canvT, parseInt(str.second) - canvL);
                 context.lineWidth = str.penWidth;
@@ -217,7 +210,6 @@
                 if (str.status == "0") {
                     context.stroke();
                     context.beginPath();
-//                    e.preventDefault();
                     context.lineTo(1, 1);
                     context.stroke();
                 }

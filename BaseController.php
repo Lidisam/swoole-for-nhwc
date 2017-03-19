@@ -18,7 +18,7 @@ class BaseController
     {
         $this->redis = new Redis();
         $this->mysql = mysqli_connect('localhost', 'root', 'ihat21036ihat', 'yhwc') or die('Unale to connect');
-        $this->singleTime = 10;
+        $this->singleTime = 60;
     }
 
     /**
