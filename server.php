@@ -1,4 +1,5 @@
 <?php
+include_once("./BaseController.php");
 
 /**
  * Created by PhpStorm.
@@ -6,7 +7,7 @@
  * Date: 2017/2/27
  * Time: 19:26
  */
-class WebSocket
+class WebSocket extends BaseController
 {
     /**
      * 配置信息
@@ -14,12 +15,12 @@ class WebSocket
      */
     private $server;
     private $port;
-    private $redis;
 
     function __construct($port)
     {
+
+        parent::__construct();
         $this->port = $port;
-        $this->redis = new Redis();
         $this->init();
     }
 
@@ -31,12 +32,14 @@ class WebSocket
         /**连接本地的 Redis 服务*/
         $this->redis->connect('127.0.0.1', 6379);
         $this->redis->set("fd", "[]");    //每次第一次执行都需要先清空reids里面的标识
-
+        /**设置数据库**/
+        $sql = "set names utf8";
+        mysqli_query($this->mysql, $sql);
         /*********启动服务**********/
         $this->server = $server = new swoole_websocket_server('0.0.0.0', $this->port);
         $this->server->set([
-//            'worker_num' => 2,
-            'daemonize' => true, //是否作为守护进程
+            'worker_num' => 2,
+//            'daemonize' => true, //是否作为守护进程
         ]);
         $this->server->on('open', [$this, 'open']);
         $this->server->on('message', [$this, 'message']);
@@ -60,10 +63,6 @@ class WebSocket
             $this->redis->set("fd", $str);
         }
 
-        $server->tick(1000, function () use ($server) {
-//            $counter = time();
-//            echo substr($counter, -4) . "\t";
-        });
     }
 
     /**
@@ -92,64 +91,20 @@ class WebSocket
         }
         /**游戏开始信号**/
         if ($val['status'] == '7') {
-            $str = json_decode($this->redis->get("fd"), true);
-
-            //TODO:销毁方法：https://wiki.swoole.com/wiki/page/415.html
-            $server->tick(1000, function ($id) use ($server, $str, $frame) {
-                //TODO:这是重复部分，应合并~~~~~~~~~~~~~~~~~~~~~~~~~~
-                if (!$this->redis->EXISTS("time_" . $frame->fd . "")) $this->redis->set("time_" . $frame->fd . "", (int)0);
-                /**清除该定时器以及对应的计数器**/
-                if ((int)$this->redis->get("time_" . $frame->fd . "") > 50) {
-                    $server->clearTimer($id);
-                    $this->redis->del("time_" . $frame->fd . "");
-                }
-                /**轮到谁玩广播，假设每人60秒-5秒休息时间**/
-                foreach ($str as $key => $value) {
-                    if ($str[$frame->fd]['roomnum'] != $value['roomnum']) {
-                        unset($str[$key]);   //删除非本房间号的信息
-                    }
-                }
-                /**确定当前画的玩家**/
-                $counter = 1;   //用于确定当前是哪个在画
-                $currentCounter = ceil($this->redis->get("time_" . $frame->fd . "") / 65);  //进一取整
-                $curUser = null;  //用于存储当前正在画的玩家信息
-                foreach ($str as $key => $value) {
-                    if ($key != 'status') {
-                        if ($counter == $currentCounter) {  //当前的画的玩家
-                            $curUser = $value;
-                            break;
-                        }
-                        $counter++;
-                    }
-                }
-                foreach ($str as $key => $value) {
-                    if ($key != 'status') {
-                        $server->push((int)$key, '{"status":"8","time":"' . $this->redis->get("time_" . $frame->fd . "")
-                            . '","username":"' . $curUser['username'] . '"}');
-                        $counter++;
-                    }
-                }
-                $this->redis->INCRBY("time_" . $frame->fd . "", 1);
-            });
-
-
-            $server->push($frame->fd, $frame->data);
+            $this->playGame($server, $frame);
         }
         /**游戏返回答案处理**/
         if ($val['status'] == '9') {
             $server->push($frame->fd, $frame->data);  //先给自己发一份
         }
-
         /**信号广播**/
         $str = json_decode($this->redis->get("fd"), true);
-//        print_r($str);
         //获取当前房间号所有用户信息
         foreach ($str as $key => $value) {
             if ($str[$frame->fd]['roomnum'] != $value['roomnum']) {
                 unset($str[$key]);   //删除非本房间号的信息
             }
         }
-//        print_r($str);
         $str['status'] = "5";  //当前房间所有用户信息
         foreach ($str as $key => $value) {
             if ($key != 'status') {
@@ -176,42 +131,77 @@ class WebSocket
         $this->redis->set("fd", json_encode($str));
     }
 
-    /**
-     * 设置返回信息格式
-     * @param $data
-     * @param $type
-     * @param int $status
-     * @return string
-     */
-    private function buildMsg($data, $type, $status = 200)
-    {
-        return json_encode([
-            'status' => $status,
-            'type' => $type,
-            'data' => $data
-        ]);
-    }
 
     /**
-     * 接收信号
-     * @param $signMsgs
-     * @param $fd
-     * @return int
+     * 处理游戏进行时操作
+     * @param $server
+     * @param $frame
      */
-    public function getSign($signMsgs, $fd)
+    public function playGame($server, $frame)
     {
-        $sign = $signMsgs['status'];
-        switch ($sign) {
-            case '3':
-                $val = explode("#", $signMsgs['username']);
-                $str = json_decode($this->redis->get("fd"), true);
-                $counter = count($str);
-                $str[$fd] = ['username' => $val['0'], 'roomnum' => $val['1']];
-                $this->redis->set("fd", json_encode($str));
-                return '{"status":"4", "username": "' . $val['0'] . '","counter":"' . $counter . '"}';   //上线信号
-                break;
-        }
+        $str = json_decode($this->redis->get("fd"), true);
+        //TODO:销毁方法：https://wiki.swoole.com/wiki/page/415.html
+        $server->tick(1000, function ($id) use ($server, $str, $frame) {
+            if (!$this->redis->EXISTS("time_" . $frame->fd . "")) {
+                $this->redis->set("time_" . $frame->fd . "", (int)0);
+            }
+            /**清除该定时器以及对应的计数器**/
+            if ((int)$this->redis->get("time_" . $frame->fd . "") > 50) {
+                $server->clearTimer($id);
+                $this->redis->del("time_" . $frame->fd . "");
+                $this->redis->del("tips_" . $frame->fd . "");
+            }
+            /**轮到谁玩广播，假设每人60秒-5秒休息时间**/
+            foreach ($str as $key => $value) {
+                if ($str[$frame->fd]['roomnum'] != $value['roomnum']) {
+                    unset($str[$key]);   //删除非本房间号的信息
+                }
+            }
+            /**确定当前画的玩家**/
+            $counter = 1;   //用于确定当前是哪个在画
+            $currentCounter = ceil($this->redis->get("time_" . $frame->fd . "") / 20);  //进一取整
+            echo "\n 当前计数：{$counter}、{$this->redis->get("time_" . $frame->fd . "")} \n";
+            echo "\n 当前取整：" . ceil($this->redis->get("time_" . $frame->fd . "") / 20) . " \n";
+            $curUser = null;  //用于存储当前正在画的玩家信息
+            $flag = 0;   //用于标识是否取出新的数据
+            foreach ($str as $key => $value) {
+                if ($key != 'status') {
+                    if ($counter == $currentCounter) {  //当前的画的玩家
+                        $curUser = $value;
+                        //如果是整数则取出一个数据
+                        if (is_int($this->redis->get("time_" . $frame->fd . "") / 20)) {
+                            $flag = 1;
+                        } else if ($this->redis->get("time_" . $frame->fd . "") == 1) {
+                            $result = mysqli_query($this->mysql, "SELECT * FROM yhwc ORDER BY rand() limit 1");
+                            $row = mysqli_fetch_row($result);
+                            print_r(json_encode($row));
+                            $this->redis->set("tips_" . $frame->fd . "", json_encode($row));  //题目
+                        }
+                        break;
+                    }
+                    $counter++;
+                }
+            }
+            foreach ($str as $key => $value) {
+                if ($key != 'status') {
+                    $row = json_decode($this->redis->get("tips_" . $frame->fd . ""), true);  //题目
+                    $server->push((int)$key, '{"status":"8","time":"' . $this->redis->get("time_" . $frame->fd . "")
+                        . '","username":"' . $curUser['username'] . '", "name": "' . $row['1'] . '", "tips": "' . $row['2'] . '"}');
+                    $counter++;
+                }
+            }
+            /**如果标识为1代表取出新的数据**/
+            if ($flag == 1) {
+                $result = mysqli_query($this->mysql, "SELECT * FROM yhwc ORDER BY rand() limit 1");
+                $row = mysqli_fetch_row($result);
+                print_r(($row));
+                $this->redis->set("tips_" . $frame->fd . "", json_encode($row));  //题目
+            }
+            $this->redis->INCRBY("time_" . $frame->fd . "", 1);
+        });
+        $server->push($frame->fd, $frame->data);
     }
+
 
 }
 
