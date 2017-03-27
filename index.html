@@ -21,11 +21,11 @@
 <!-- 头部 -->
 <header>
     <h1 class="logo">
-        <a target="_blank" href="#" id="roomnum">ds</a>
-        <a href="" id="player"></a>
-        <a href="" id="tips"></a>
-        <a href="" id="leaveTime"></a>
-        <a href="" id="answer"></a>
+        <span id="roomnum">ds</span>
+        <span id="player"></span>
+        <span id="tips"></span>
+        <span id="leaveTime"></span>
+        <span id="answer"></span>
     </h1>
 </header>
 
@@ -97,9 +97,6 @@
 <!--layer弹出层插件-->
 <script src="./assets/layer/layer.js"></script>
 
-<!--helper函数-->
-<!--<script src="./assets/js/helper.js"></script>-->
-
 
 <!--登录连接处理模块-->
 <script>
@@ -156,17 +153,36 @@
                         flag = 0;
                         $("#answer").html("");  //给当前玩家显示答案
                     }
-                    var time = singleTime - parseInt(str.time)%singleTime;
+                    var time = singleTime - parseInt(str.time) % singleTime;
+                    if (time == '60') {  //更换任务画时自动清屏
+                        /**换人，即将该盘标识设置重置**/
+                        socket.send('{"status":"10"}');
+                        context.clearRect(0, 0, document.body.clientWidth, canvas.height);
+                        context.beginPath();
+                        context.lineTo(1, 1);
+                        context.stroke();
+                        layer.msg('上轮答案为： ' + str.name);
+                    }
                     $("#leaveTime").html('|time：' + time);
                     $("#player").html('|player：' + str.username);
                     $("#tips").html('|tip：' + str.tips);
                 } else {
+                    $("#leaveTime").html('');
+                    $("#player").html('');
+                    $("#tips").html('');
+                    $("#answer").html('');  //给当前玩家显示答案
                     layer.msg('游戏结束');
+                    socket.close();    //关闭socket连接
                 }
             }
             /**答案文字信息结果接收**/
             if (str.status == "9") {
-                randomText(str.username + "：" + str.answer);
+                if (str.is_true == '1') {
+                    randomText(str.username + "答对了，加" + str.mark);
+                    socket.send("");  //随意请求，只是为了更新记录
+                } else {
+                    randomText(str.username + "：" + str.answer);
+                }
             }
             /**显示当前房间所有用户信息**/
             if (str.status == "5") {
@@ -177,11 +193,11 @@
                         if (username == val['username']) {
                             html += '<div class="col-xs-3" id="user_' + n + '" style="margin: 0 0 0 0;padding: 0 0 0 0;color: red">'
                                 + val['username'] +
-                                '#<span id="user_mark_' + n + '">0</span></div>';
+                                '#<span id="user_mark_' + val['username'] + '">' + val['mark'] + '</span></div>';
                         } else {
                             html += '<div class="col-xs-3" id="user_' + n + '" style="margin: 0 0 0 0;padding: 0 0 0 0;">'
                                 + val['username'] +
-                                '#<span id="user_mark_' + n + '">0</span></div>';
+                                '#<span id="user_mark_' + val['username'] + '">' + val['mark'] + '</span></div>';
                         }
                 });
                 $("#currentUser").html(html);
@@ -190,7 +206,7 @@
             if (str.status == "4") {
                 layer.msg(str.username + '上线了');
             }
-            //画板清屏
+            //画板清屏11
             if (str.status == "2") {
                 context.clearRect(0, 0, document.body.clientWidth, canvas.height);
                 context.beginPath();

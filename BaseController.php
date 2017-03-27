@@ -35,26 +35,10 @@ class BaseController
                 $val = explode("#", $signMsgs['username']);
                 $str = json_decode($this->redis->get("fd"), true);
                 $counter = count($str);
-                $str[$fd] = ['username' => $val['0'], 'roomnum' => $val['1']];
-                $this->redis->set("fd", json_encode($str));
-                return '{"status":"4", "username": "' . $val['0'] . '","counter":"' . $counter . '"}';   //上线信号
+                $str[$fd] = ['username' => $val['0'], 'roomnum' => $val['1'], 'mark' => 0, 'is_mark' => 0];
+                $this->redis->set("fd", json_encode($str));   //is_mark用于记录是否已经回答了
+                return '{"status":"4", "username": "' . $val['0'] . '","counter":"' . $counter . '", "mark": 0, "is_mark":0}';   //上线信号
                 break;
         }
-    }
-
-    /**
-     * 设置返回信息格式
-     * @param $data
-     * @param $type
-     * @param int $status
-     * @return string
-     */
-    private function buildMsg($data, $type, $status = 200)
-    {
-        return json_encode([
-            'status' => $status,
-            'type' => $type,
-            'data' => $data
-        ]);
     }
 }

@@ -3,7 +3,7 @@
  */
 /**发送答案**/
 document.getElementById("sendQuestion").onclick = function () {
-    socket.send('{"status":"9","username":"' + username + '","answer":"' + document.getElementById("input").value + '"}');
+    socket.send('{"status":"9","is_true": 0,"username":"' + username + '","answer":"' + document.getElementById("input").value + '"}');
 };
 
 /**显示弹幕信息**/
@@ -30,6 +30,7 @@ function randomText(val) {
     }, 30);
 }
 function randomColor() {
-    return '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).slice(-6);
+    return '#000000';
+    // return '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).slice(-6);
 }
 
