@@ -2,18 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cb62fb82-bdd3-4194-9f05-f4356a4742b4" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Module/PlayGameTrait.php" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/demo/admin.html" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/demo/client.html" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/demo/server.php" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/index_copy.html" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/server_old.php" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/设计流程.txt" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/BaseController.php" afterPath="$PROJECT_DIR$/BaseController.php" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/assets/layer/bullet-screen.js" afterPath="$PROJECT_DIR$/assets/layer/bullet-screen.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server.php" afterPath="$PROJECT_DIR$/server.php" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -73,8 +62,8 @@
       <file leaf-file-name="server.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/server.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="413">
-              <caret line="151" column="58" lean-forward="true" selection-start-line="151" selection-start-column="58" selection-end-line="151" selection-end-column="58" />
+            <state relative-caret-position="443">
+              <caret line="154" column="5" lean-forward="true" selection-start-line="154" selection-start-column="5" selection-end-line="154" selection-end-column="5" />
               <folding />
             </state>
           </provider>
@@ -388,12 +377,12 @@
       <workItem from="1490428464186" duration="9579000" />
       <workItem from="1490515478531" duration="166000" />
       <workItem from="1490531850181" duration="2996000" />
-      <workItem from="1490618141346" duration="3104000" />
+      <workItem from="1490618141346" duration="3198000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="142914000" />
+    <option name="totallyTimeSpent" value="143008000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -839,8 +828,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/server.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="413">
-          <caret line="151" column="58" lean-forward="true" selection-start-line="151" selection-start-column="58" selection-end-line="151" selection-end-column="58" />
+        <state relative-caret-position="443">
+          <caret line="154" column="5" lean-forward="true" selection-start-line="154" selection-start-column="5" selection-end-line="154" selection-end-column="5" />
           <folding />
         </state>
       </provider>
